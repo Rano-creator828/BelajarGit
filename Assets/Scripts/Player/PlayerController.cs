@@ -3,44 +3,41 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] private PlayerData playerData;
 
-    private float currentHP;
-    private float speed;
+    public PlayerData data;
 
+    private float currentHP; 
     private PlayerInput playerInput;
     private Vector2 moveInput;
 
-    void Awake()
+    void Start()
     {
         playerInput = GetComponent<PlayerInput>();
 
-        // Cegah error kalau belum di-assign
-        if (playerData == null)
+        if (data != null)
         {
-            Debug.LogError("PlayerData belum di-assign di Inspector!");
-            return;
+            currentHP = data.maxHP;
         }
-
-        currentHP = playerData.maxHP;
-        speed = playerData.moveSpeed;
     }
-
+    
     void Update()
     {
-        if (playerInput == null || playerData == null) return;
+        if (GameManager.Instance.currentState != GameState.Playing) return;
 
+        if (playerInput == null) return;
+        
         moveInput = playerInput.actions["Move"].ReadValue<Vector2>();
+        float h = moveInput.x;
+        float v = moveInput.y;
 
-        Vector3 movement = new Vector3(moveInput.x, moveInput.y, 0f);
-        transform.Translate(movement * speed * Time.deltaTime);
+        transform.Translate(new Vector3(h, v, 0) * data.moveSpeed * Time.deltaTime);
     }
 
     void OnCollisionStay2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Wall"))
         {
-            TakeDamage(0.1f * Time.deltaTime); // biar damage per detik, bukan per frame
+            TakeDamage(0.1f);
         }
     }
 
@@ -51,16 +48,7 @@ public class PlayerController : MonoBehaviour
 
         if (currentHP <= 0)
         {
-            currentHP = 0;
-
-            if (GameManager.Instance != null)
-            {
-                GameManager.Instance.GameOver();
-            }
-            else
-            {
-                Debug.LogError("GameManager.Instance tidak ditemukan!");
-            }
+            GameManager.Instance.UpdateState(GameState.GameOver);
         }
     }
 }
