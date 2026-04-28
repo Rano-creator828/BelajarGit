@@ -4,7 +4,6 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(Rigidbody2D))]
 public class PlayerController : MonoBehaviour
 {
-    [Header("Settings")]
     public PlayerData playerData;
 
     private float currentHP;
@@ -14,18 +13,15 @@ public class PlayerController : MonoBehaviour
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        
 
-
-        if (playerData == null)
+        if (playerData != null)
         {
-            Debug.LogError($"PlayerData belum dipasang pada {gameObject.name}! Seret file ScriptableObject-mu ke Inspector.");
-            return;
+            currentHP = playerData.maxHP;
         }
-
-        currentHP = playerData.maxHP;
     }
 
-   
+
     public void OnMove(InputValue value)
     {
         moveInput = value.Get<Vector2>();
@@ -34,10 +30,7 @@ public class PlayerController : MonoBehaviour
     void FixedUpdate()
     {
 
-        if (playerData != null)
-        {
-            MovePlayer();
-        }
+        MovePlayer();
     }
 
     private void MovePlayer()
@@ -48,24 +41,20 @@ public class PlayerController : MonoBehaviour
 
     private void OnCollisionStay2D(Collision2D collision)
     {
-
         if (collision.gameObject.CompareTag("Wall"))
         {
+   
             TakeDamage(0.1f * Time.fixedDeltaTime);
         }
     }
 
     public void TakeDamage(float dmg)
     {
-        if (currentHP <= 0) return; 
-
         currentHP -= dmg;
-        currentHP = Mathf.Max(currentHP, 0);
+        
 
-        if (Time.frameCount % 60 == 0) 
-        {
-            Debug.Log($"Player HP: {currentHP:F1}");
-        }
+        currentHP = Mathf.Max(currentHP, 0);
+        Debug.Log($"Player HP: {currentHP:F2}");
 
         if (currentHP <= 0)
         {
@@ -75,19 +64,10 @@ public class PlayerController : MonoBehaviour
 
     private void Die()
     {
-        Debug.Log("<color=red>Player Dead!</color>");
-        
-        
+        Debug.Log("Player Dead!");
         if (GameManager.Instance != null)
         {
             GameManager.Instance.GameOver();
         }
-        else
-        {
-            Debug.LogWarning("GameManager.Instance tidak ditemukan! Pastikan ada GameManager di scene.");
-        }
-
-        this.enabled = false; 
-        rb.linearVelocity = Vector2.zero;
     }
 }
