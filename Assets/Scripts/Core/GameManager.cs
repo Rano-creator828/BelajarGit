@@ -1,65 +1,38 @@
 using UnityEngine;
-using UnityEngine.SceneManagement; 
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
+
     public GameState currentState;
 
     void Awake()
     {
-        if (Instance == null) Instance = this;
+        Instance = this;
     }
 
     void Start()
     {
-        UpdateState(GameState.Playing);
-        Debug.Log("state awal ");
+        currentState = GameState.Playing;
     }
 
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            if (currentState == GameState.Playing)
-            {
-                UpdateState(GameState.Paused);
-                Debug.Log("state pause");
-            }
-            else if (currentState == GameState.Paused)
-            {
-                UpdateState(GameState.Playing);
-                Debug.Log("state play");
-            }
+            PauseGame();
         }
     }
 
-    public void UpdateState(GameState newState)
+    public void PauseGame()
     {
-        currentState = newState;
-
-        switch (newState)
-        {
-            case GameState.Playing:
-                Time.timeScale = 1f;
-                break;
-            case GameState.Paused:
-                Time.timeScale = 0f;
-                break;
-            case GameState.GameOver:
-                Time.timeScale = 0f;
-                Debug.Log("Game Over!");
-                break;
-        }
+        Time.timeScale = 0f;
+        currentState = GameState.Paused;
     }
 
-    public void RestartGame()
+    public void GameOver()
     {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-    }
-
-    public void GoToMainMenu()
-    {
-        SceneManager.LoadScene("MainMenu");
+        Debug.Log("Game Over");
+        currentState = GameState.GameOver;
     }
 }
